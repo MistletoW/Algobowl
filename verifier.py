@@ -1,4 +1,5 @@
 import sys
+import os
 
 def readInputFile(filePath):
     with open(filePath, 'r') as file:
@@ -15,12 +16,13 @@ def readInputFile(filePath):
     
     return n, dependencies
 
-def buildGraph(n, dependencies):
+def buildGraph(n, dependencies, removed):
     graph = {i+1: [] for i in range(n)}
     
     for node, deps in dependencies.items():
-        for dep in deps:
-            graph[dep].append(node)
+        if node not in removed:
+            for dep in deps:
+                graph[dep].append(node)
     
     return graph
 
@@ -48,19 +50,22 @@ def topologicalSort(graph, n):
         return None
 
 def main():
-    if len(sys.argv) < 2:
-        print("Please provide the input file name.")
-        return
-    
-    filePath = sys.argv[1]
-    n, dependencies = readInputFile(filePath)
-    graph = buildGraph(n, dependencies)
-    topoSort = topologicalSort(graph, n)
-
-    if topoSort == None:
-        print("Failed verification " + sys.argv[1])
-    else:
-        print("Passed Verification " + sys.argv[1])
+    with open('./output_verification.txt', 'w') as file:
+        if len(sys.argv) < 2:
+            print("Please provide the input file name.")
+            return
+        directory = sys.argv[1]
+        for teamOutput in os.listdir(directory):
+            n_rem, removed = readInputFile(directory + "/" + teamOutput)
+            
+            filePath = "input_cycles_10.txt" #TODO #Needs to be updated 
+            n, dependencies = readInputFile(filePath)
+            graph = buildGraph(n, dependencies, removed)
+            topoSort = topologicalSort(graph, n)
+            if topoSort == None:
+                file.write("F " + teamOutput +"\n")
+            else:
+                file.write("T " + teamOutput +"\n")
     
 main()
 
